@@ -1,0 +1,32 @@
+{
+  "manifest_version": 2,
+  "name": "Brightspace Facilitator Overview",
+  "version": "1.0",
+
+  "description": "Quickly see facilitator feed",
+
+  "icons": {
+    "48": "icons/icon.svg"
+  },
+
+  "permissions": ["activeTab", "storage"],
+
+  "browser_action": {
+    "default_icon": "icons/icon-48.png",
+    "default_title": "Facilitator",
+    "default_popup": "popup/build/index.html"
+  },
+
+  "content_scripts": [
+    {
+      "matches": ["https://brightspace.algonquincollege.com/d2l/home"],
+      "js": ["in-page.js"]
+    }
+  ],
+
+  "browser_specific_settings": {
+    "gecko": {
+      "id": "an-algonquin-facilitator@gmail.com"
+    }
+  }
+}
