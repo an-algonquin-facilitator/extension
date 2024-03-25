@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { fetchEnrollments, fetchFolders } from "./api/api";
+import { fetchEnrollments, fetchFolders, fetchSubmissions } from "./api/api";
 import { useDispatch, useSelector } from "react-redux";
 import { setAssignments, setCourses } from "./store/slices/courses";
 import { RootState } from "./store/store";
@@ -11,6 +11,7 @@ const useLoadCourseNews = () => {
   const [loading, setLoading] = useState({ course: true });
   const token = useSelector((state: RootState) => state.token.value);
   const dispatch = useDispatch();
+
   useEffect(() => {
     fetchEnrollments(token).then((courses) => {
       const loadedCourses = courses.Items.filter(
@@ -31,25 +32,38 @@ const useLoadCourseNews = () => {
 
       loadedCourses.forEach((course) => {
         fetchFolders(token, course.id).then((folders) => {
-          console.log(folders);
-          const toGrade = folders.filter(
-            (f) => f.TotalUsersWithSubmissions - f.TotalUsersWithFeedback > 0
+          const classes = folders.map((folder) =>
+            fetchSubmissions(token, [course.id, folder.Id + ""])
+              .then((subs) =>
+                subs.reduce((acc, s) => acc + s.Submissions.length, 0)
+              )
+              .then(async (totalCount) => {
+                return browser.storage.sync
+                  .get(`${course.id}/${folder.Id}`)
+                  .then((v) => {
+                    return {
+                      name: folder.Name,
+                      folderId: folder.Id + "",
+                      total: totalCount,
+                      new: totalCount - (v[`${course.id}/${folder.Id}`] ?? 0),
+                    };
+                  });
+              })
           );
-          console.log(folders);
 
-          setLoading((loading) => ({
-            ...loading,
-            [course.id]: false,
-          }));
-          dispatch(
-            setAssignments({
-              id: course.id,
-              assignments: toGrade.map((f) => ({
-                name: f.Name,
-                amount: f.TotalUsersWithSubmissions - f.TotalUsersWithFeedback,
-              })),
-            })
-          );
+          Promise.all(classes).then((courseFetches) => {
+            const toGrade = courseFetches.filter((f) => f.new);
+            setLoading((loading) => ({
+              ...loading,
+              [course.id]: false,
+            }));
+            dispatch(
+              setAssignments({
+                id: course.id,
+                assignments: toGrade,
+              })
+            );
+          });
         });
       });
     });
@@ -90,7 +104,14 @@ const App = () => {
   return (
     <>
       {!loaded && (
-        <Box sx={{ m: 2 }}>
+        <Box
+          sx={{
+            m: 2,
+            display: "flex",
+            justifyContent: "center",
+            alignItems: "center",
+          }}
+        >
           <CircularProgress />
         </Box>
       )}

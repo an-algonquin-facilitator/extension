@@ -8,7 +8,14 @@ export const Loading = () => {
   return (
     <Box sx={{ width: "100%" }}>
       {token.state === State.LOADING && (
-        <Box sx={{ m: 2 }}>
+        <Box
+          sx={{
+            m: 2,
+            display: "flex",
+            justifyContent: "center",
+            alignItems: "center",
+          }}
+        >
           <CircularProgress />
         </Box>
       )}

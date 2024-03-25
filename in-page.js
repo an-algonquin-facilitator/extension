@@ -1,23 +1,24 @@
+const storageKey = "D2L.Fetch.Tokens";
+const genericCredsKey = "*:*:*";
+
 /**
  * Read token from localStorage
  * @returns {[number, string] | undefined}
  */
 const readToken = () => {
-  const storageKey = "D2L.Fetch.Tokens";
   const ls = localStorage[storageKey];
-  if (!ls) return undefined;
+  if (!ls) return;
 
   const obj = JSON.parse(ls);
-  if (!obj) return undefined;
+  if (!obj) return;
 
-  const genericCredsKey = "*:*:*";
   const creds = obj[genericCredsKey];
-  if (!creds) return undefined;
+  if (!creds) return;
 
   const expires = creds.expires_at;
   const token = creds.access_token;
 
-  if (!expires || !token) return undefined;
+  if (!expires || !token) return;
   return [expires * 1000, token];
 };
 
@@ -27,7 +28,6 @@ const readToken = () => {
 const waitForToken = async () => {
   return new Promise((res, rej) => {
     /**
-     *
      * @param {number} c number of times probed.
      */
     const onError = (c) => {
@@ -36,7 +36,6 @@ const waitForToken = async () => {
     };
 
     /**
-     *
      * @param {number} c number of times probed.
      */
     const checkToken = (c) => {
@@ -49,6 +48,7 @@ const waitForToken = async () => {
       if (!healthyToken) return onError(c);
       res([expires, token]);
     };
+
     checkToken(0);
   });
 };

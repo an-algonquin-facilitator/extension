@@ -11,6 +11,11 @@ export interface WhoAmI {
 const lpVersion = "1.9";
 const leVersion = "1.74";
 
+// API def
+// https://docs.valence.desire2learn.com/http-routingtable.html
+//            https://d52a5d1e-ab94-4159-bbef-ace0093616dc.activities.api.brightspace.com/
+//            old/activities/6606_2000_575368/usages/621196/evaluation-status
+
 const host = `https://d52a5d1e-ab94-4159-bbef-ace0093616dc.organizations.api.brightspace.com`;
 const lpBase = `/d2l/api/lp/${lpVersion}`;
 const lpBaseURL = host + lpBase;
@@ -80,6 +85,56 @@ export const useFoldersQuery = makeQuery<Folder[], string>(
 export const fetchFolders = makeFetch<Folder[], string>(
   leBaseURL,
   (course: string) => `/${course}/dropbox/folders/`
+);
+
+interface Entity {
+  EntityId: number;
+  EntityType: "User";
+  DisplayName: string;
+}
+
+interface Feedback {}
+
+interface Submission {
+  Id: number;
+  SubmittedBy: {
+    Id: string;
+    DisplayName: string;
+  };
+  SubmissionDate: string | null;
+  // "Comment": { <composite:RichText> },
+  // "Files": [ // Array of File blocks
+  //     {
+  //         "FileId": <number:D2LID>,
+  //         "FileName": <string>,
+  //         "Size": <number:long>,
+  //         "isRead": <boolean>,
+  //         "isFlagged": <boolean>
+  //     },
+  //     { <composite:File> }, ...
+  // ]
+}
+
+interface SubmissionSummary {
+  Entity: Entity;
+  Status: string;
+  Feedback: Feedback;
+  Submissions: Submission[];
+  CompletionDate: string | null;
+}
+
+export const fetchSubmissions = makeFetch<
+  SubmissionSummary[],
+  [string, string]
+>(
+  leBaseURL,
+  ([course, folder]) => `/${course}/dropbox/folders/${folder}/submissions/`
+);
+
+export const fetchFeedback = makeFetch<any, [string, string, string]>(
+  leBaseURL,
+  ([course, folder, user]) =>
+    `/${course}/dropbox/folders/${folder}/feedback/user/${user}`
 );
 
 export interface Course {

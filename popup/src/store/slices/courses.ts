@@ -3,7 +3,9 @@ import type { PayloadAction } from "@reduxjs/toolkit";
 
 export interface AssignmentNews {
   name: string;
-  amount: number;
+  folderId: string;
+  total: number;
+  new: number;
 }
 
 export interface CourseNews {

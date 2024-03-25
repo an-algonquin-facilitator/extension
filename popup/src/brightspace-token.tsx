@@ -8,6 +8,7 @@ declare global {
     storage: {
       sync: {
         get(value: string): Promise<any>;
+        set(value: any): Promise<void>;
       };
     };
   };
